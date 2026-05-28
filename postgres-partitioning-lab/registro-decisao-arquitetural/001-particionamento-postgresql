@@ -1,0 +1,27 @@
+# ADR 001 - Particionamento PostgreSQL
+
+## Decisao
+
+1. O particionamento sera implementado no PostgreSQL 17.9.
+2. O banco de dados alvo e `db_lab001`.
+3. O schema alvo e `store`.
+4. Toda DDL, DML e DCL deve ser versionada por migrations Flyway.
+5. A tabela alvo sera `store.transacoes`.
+6. A tabela `transacoes` deve conter os campos:
+   - `pk`
+   - `pedido`
+   - `val_pedido`
+   - `qtde`
+   - `dat_compra`
+7. O campo `dat_compra` deve ser `timestamp with time zone`, pois a regra de particionamento e por intervalo de tempo.
+8. A tabela deve ser particionada por range usando o campo `dat_compra`.
+9. Cada particao deve conter 10 minutos de dados.
+10. Devem existir 4 particoes futuras por padrao.
+11. Quando restarem 2 particoes futuras, a manutencao automatica deve recriar o conjunto de 4 particoes futuras.
+12. A gestao das particoes deve ser feita pelo `pg_partman`.
+13. O agendamento da manutencao automatica deve ser feito pelo `pg_cron`.
+14. Deve existir monitoramento para alertar quando algum registro for incluido na particao default.
+15. Deve existir monitoramento para alertar quando restar apenas 1 particao futura disponivel.
+16. Deve existir monitoramento para alertar quando as novas particoes esperadas nao forem criadas.
+17. Deve existir monitoramento para informar quando novas particoes forem criadas.
+18. A política de retenção deve manter apenas as partições maiores que o horário corrente e as partições dos 30 minutos que antecedem o horário corrente.

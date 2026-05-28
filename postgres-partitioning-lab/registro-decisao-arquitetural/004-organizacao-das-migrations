@@ -1,0 +1,32 @@
+# ADR 004 - Organizacao das migrations
+
+## Contexto
+
+O projeto precisa ser reconstruido do zero de forma previsivel, com migrations pequenas e com responsabilidade unica.
+
+## Decisao
+
+1. As migrations devem ser numeradas sequencialmente usando o padrao Flyway `V<numero>__<descricao>.sql`.
+2. A ordem das migrations deve respeitar dependencias entre objetos.
+3. Cada view deve ter sua propria migration.
+4. Tabelas devem ser criadas antes de funcoes e views que dependem delas.
+5. Views base devem ser criadas antes das views de alerta.
+6. Funcoes devem ser criadas antes dos jobs do `pg_cron` que as executam.
+7. A massa de teste deve ser a ultima migration do fluxo.
+
+## Ordem definida
+
+1. Instalar schemas e extensoes.
+2. Criar tabela `store.transacoes`.
+3. Configurar particionamento.
+4. Criar tabelas de metricas.
+5. Criar views, uma por migration.
+6. Criar funcoes de monitoramento e purge.
+7. Agendar jobs no `pg_cron`.
+8. Inserir massa de teste.
+
+## Consequencias
+
+1. O historico fica legivel e facil de auditar.
+2. A recriacao do banco do zero fica deterministica.
+3. Alteracoes futuras podem ser adicionadas sem editar migrations ja aplicadas em ambientes persistentes.

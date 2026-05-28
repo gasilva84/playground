@@ -1,0 +1,19 @@
+# ADR 010 - Massa de teste
+
+## Contexto
+
+O lab precisa demonstrar o roteamento de inserts para particoes de 10 minutos e tambem para a particao default.
+
+## Decisao
+
+1. A massa de teste deve ser versionada por migration.
+2. A massa deve inserir registros na tabela `store.transacoes`.
+3. Devem existir registros que caiam em particoes de 10 minutos existentes.
+4. Deve existir um registro propositalmente fora da janela de particoes para cair em `store.transacoes_default`.
+5. Depois da insercao da massa, a funcao `store.coletar_metricas_particoes_transacoes()` deve ser executada.
+
+## Consequencias
+
+1. A validacao do particionamento pode ser feita com `tableoid::regclass`.
+2. O alerta da particao default deve disparar apos a massa de teste.
+3. A massa e adequada para laboratorio, mas nao deve ser usada como seed de producao.

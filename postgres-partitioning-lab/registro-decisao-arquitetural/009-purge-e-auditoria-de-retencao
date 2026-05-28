@@ -1,0 +1,27 @@
+# ADR 009 - Purge e auditoria de retencao
+
+## Contexto
+
+A ADR 001 define uma politica de retencao baseada no horario corrente e nos 30 minutos anteriores. O projeto tambem precisa registrar quando o purge ocorreu e quantas particoes foram excluidas.
+
+## Decisao
+
+1. O purge deve ser executado pela funcao `store.purgar_particoes_transacoes()`.
+2. A funcao deve chamar `partman.run_maintenance` para `store.transacoes`.
+3. A funcao deve capturar a lista de particoes antes e depois da manutencao.
+4. A tabela `store.transacoes_purge_metricas` deve registrar:
+   - data/hora de inicio
+   - data/hora de fim
+   - quantidade de particoes antes
+   - quantidade de particoes depois
+   - quantidade de particoes excluidas
+   - nomes das particoes excluidas
+   - status da execucao
+   - mensagem de erro, quando houver
+5. A view `store.vw_transacoes_ultimo_purge` deve expor a ultima execucao do purge.
+
+## Consequencias
+
+1. A politica de retencao pode ser auditada por SQL.
+2. Execucoes sem exclusao tambem ficam registradas.
+3. Falhas no purge ficam registradas e continuam propagando erro para o executor.

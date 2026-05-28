@@ -1,0 +1,52 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postgres-partitioning-lab
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-usr_lab001}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pdw_lab001}
+      POSTGRES_DB: ${POSTGRES_DB:-db_lab001}
+      TZ: ${DB_TIMEZONE:-America/Sao_Paulo}
+    ports:
+      - "5499:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c shared_preload_libraries='pg_cron'
+      -c cron.database_name='${POSTGRES_DB:-db_lab001}'
+      -c cron.timezone='${DB_TIMEZONE:-America/Sao_Paulo}'
+      -c timezone='${DB_TIMEZONE:-America/Sao_Paulo}'
+      -c log_timezone='${DB_TIMEZONE:-America/Sao_Paulo}'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  flyway:
+    image: flyway/flyway:12.6-alpine
+    container_name: flyway-partitioning-lab
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-db_lab001}
+      FLYWAY_USER: ${POSTGRES_USER:-usr_lab001}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-pdw_lab001}
+      FLYWAY_DEFAULT_SCHEMA: store
+      FLYWAY_SCHEMAS: store,partman
+      FLYWAY_LOCATIONS: filesystem:/flyway/migrations
+      FLYWAY_CONNECT_RETRIES: 60
+      TZ: ${DB_TIMEZONE:-America/Sao_Paulo}
+    volumes:
+      - ./flyway/migrations:/flyway/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: migrate
+    restart: "no"
+
+volumes:
+  pgdata:
+    driver: local

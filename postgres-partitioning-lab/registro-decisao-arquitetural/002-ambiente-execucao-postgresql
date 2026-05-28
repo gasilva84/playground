@@ -1,0 +1,29 @@
+# ADR 002 - Ambiente de execucao PostgreSQL
+
+## Contexto
+
+A ADR 001 define PostgreSQL 17.9, `pg_partman`, `pg_cron` e Flyway. Para reconstruir o projeto do zero, o ambiente precisa instalar as extensoes no sistema operacional da imagem e inicializar o servidor com os parametros corretos.
+
+## Decisao
+
+1. A imagem base deve ser `postgres:17.9`.
+2. A imagem customizada deve instalar os pacotes:
+   - `postgresql-17-partman`
+   - `postgresql-17-cron`
+3. O PostgreSQL deve carregar apenas `pg_cron` em `shared_preload_libraries`.
+4. O background worker do `pg_partman` nao deve ser habilitado, pois a manutencao sera agendada por `pg_cron`.
+5. O banco padrao do `pg_cron` deve ser o mesmo banco da aplicacao.
+6. O fuso horario padrao deve ser `America/Sao_Paulo`.
+7. O fuso horario deve ser aplicado a:
+   - `TZ`
+   - `timezone`
+   - `log_timezone`
+   - `cron.timezone`
+8. O container PostgreSQL deve expor a porta local `5499` para a porta interna `5432`.
+9. O volume de dados deve ser nomeado e gerenciado pelo Docker Compose.
+
+## Consequencias
+
+1. A execucao local fica reprodutivel via Docker Compose.
+2. O agendamento do `pg_cron` passa a obedecer o mesmo fuso horario do banco e do sistema operacional do container.
+3. A gestao de particoes fica centralizada em jobs versionados no banco, evitando concorrencia com o background worker do `pg_partman`.

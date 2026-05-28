@@ -1,0 +1,24 @@
+# ADR 006 - Configuracao do pg_partman
+
+## Contexto
+
+A ADR 001 determina que a gestao das particoes seja feita pelo `pg_partman`.
+
+## Decisao
+
+1. A extensao `pg_partman` deve ser instalada no schema `partman`.
+2. O parent table do `pg_partman` deve ser `store.transacoes`.
+3. O campo de controle deve ser `dat_compra`.
+4. O intervalo de particionamento deve ser `10 minutes`.
+5. O `premake` deve ser `4`.
+6. A particao default deve ser criada.
+7. `infinite_time_partitions` deve ser habilitado.
+8. A retencao deve ser `30 minutes`.
+9. `retention_keep_table` deve ser `false`.
+10. `retention_keep_index` deve ser `false`.
+
+## Consequencias
+
+1. O banco cria particoes futuras automaticamente.
+2. Registros fora da janela de particoes sao direcionados para a particao default.
+3. O purge remove fisicamente particoes antigas conforme a janela de retencao definida.

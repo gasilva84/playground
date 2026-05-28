@@ -1,0 +1,27 @@
+# ADR 008 - Monitoramento de particoes e alertas
+
+## Contexto
+
+A ADR 001 exige monitoramento para particao default, disponibilidade de particoes futuras e criacao de novas particoes.
+
+## Decisao
+
+1. O monitoramento deve ser implementado dentro do schema `store`.
+2. A tabela `store.transacoes_particoes_metricas` deve registrar coletas periodicas.
+3. A funcao `store.coletar_metricas_particoes_transacoes()` deve coletar:
+   - quantidade de particoes futuras disponiveis
+   - quantidade de registros na particao default
+   - quantidade de particoes criadas desde a ultima coleta
+   - maior intervalo de particao existente
+   - lista de particoes conhecidas
+4. A view `store.vw_transacoes_particoes` deve expor as particoes e seus limites.
+5. A view `store.vw_alerta_transacoes_particao_default` deve indicar alerta quando houver registros na particao default.
+6. A view `store.vw_alerta_transacoes_particoes_disponiveis` deve indicar alerta quando restar no maximo 1 particao futura.
+7. A view `store.vw_alerta_transacoes_manutencao_particoes` deve indicar alerta quando houver menos de 4 particoes futuras.
+8. A view `store.vw_alerta_transacoes_particoes_criadas` deve indicar quando novas particoes foram observadas desde a ultima coleta.
+
+## Consequencias
+
+1. Os alertas ficam disponiveis para consulta SQL.
+2. O banco nao envia notificacoes externas diretamente.
+3. Ferramentas externas podem consultar as views para integrar com alerting.

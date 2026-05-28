@@ -1,0 +1,25 @@
+# ADR 007 - Agendamento com pg_cron
+
+## Contexto
+
+A ADR 001 determina que o agendamento da gestao automatica de particoes seja feito com `pg_cron`.
+
+## Decisao
+
+1. A extensao `pg_cron` deve ser criada por migration.
+2. O `pg_cron` deve usar o mesmo banco da aplicacao.
+3. O timezone do `pg_cron` deve ser `America/Sao_Paulo` por padrao.
+4. O job `partman_maintenance_transacoes` deve executar:
+   - `CALL partman.run_maintenance_proc();`
+5. O job `monitoramento_particoes_transacoes` deve executar:
+   - `SELECT store.coletar_metricas_particoes_transacoes();`
+6. O job `purge_particoes_transacoes` deve executar:
+   - `SELECT store.purgar_particoes_transacoes();`
+7. O job de purge deve rodar a cada 1 minuto.
+8. Os jobs devem ser recriados por migration usando `cron.unschedule` antes de `cron.schedule`.
+
+## Consequencias
+
+1. A manutencao, o monitoramento e o purge sao reprodutiveis por migration.
+2. O purge frequente permite observar rapidamente a politica de retencao no lab.
+3. A agenda fica auditavel na tabela `cron.job`.

@@ -1,0 +1,25 @@
+# ADR 005 - Modelagem da tabela transacoes
+
+## Contexto
+
+A ADR 001 define a tabela `store.transacoes`, seus campos e o particionamento por `dat_compra`.
+
+## Decisao
+
+1. A tabela deve ser criada como `store.transacoes`.
+2. A coluna `pk` deve ser `bigint GENERATED ALWAYS AS IDENTITY`.
+3. A coluna `dat_compra` deve ser `timestamp with time zone NOT NULL`.
+4. A chave primaria deve ser composta por `(pk, dat_compra)`.
+5. A chave primaria deve incluir `dat_compra` porque o PostgreSQL exige que constraints unicas em tabelas particionadas incluam a chave de particao.
+6. A coluna `val_pedido` deve ser `numeric(12, 2)` com `CHECK (val_pedido >= 0)`.
+7. A coluna `qtde` deve ser `integer` com `CHECK (qtde > 0)`.
+8. A coluna `pedido` deve ser `varchar(64)` e nao pode ser vazia.
+9. Devem existir indices em:
+   - `pedido`
+   - `dat_compra`
+
+## Consequencias
+
+1. A tabela atende as restricoes de particionamento do PostgreSQL.
+2. Consultas por pedido e por periodo ficam cobertas por indices basicos.
+3. A validacao minima de dominio fica no proprio banco.

@@ -1,0 +1,30 @@
+# ADR 003 - Versionamento Flyway e schemas
+
+## Contexto
+
+A ADR 001 exige que toda DDL, DML e DCL seja versionada por migrations Flyway e define o schema alvo `store`.
+
+## Decisao
+
+1. O Flyway deve ser executado por container dedicado no Docker Compose.
+2. O schema default do Flyway deve ser `store`.
+3. A tabela de historico do Flyway deve ficar em `store.flyway_schema_history`.
+4. A lista de schemas gerenciados pelo Flyway deve ser:
+   - `store`
+   - `partman`
+5. O schema `store` deve conter todos os objetos da aplicacao:
+   - tabela particionada
+   - particoes
+   - tabela default
+   - tabelas de metricas
+   - funcoes
+   - views
+6. O schema `partman` deve conter a extensao `pg_partman`.
+7. A extensao `pg_cron` deve ser criada por migration.
+8. Nenhum objeto da aplicacao deve ser criado no schema `public`.
+
+## Consequencias
+
+1. A reconstrucao do banco depende apenas das migrations.
+2. O historico do Flyway fica isolado no mesmo schema funcional do lab.
+3. O schema `public` permanece sem objetos da aplicacao.
